@@ -4,6 +4,9 @@ var router = express.Router();
 var mongoose = require('./connect');
 var clinic = mongoose.model('clinic', require('./schema/clinic'));
 var customer = mongoose.model('customer', require('./schema/customer'));
+var pet = mongoose.model('pet', require('./schema/pet'));
+
+var ObjectId = require('mongodb').ObjectID;
 
 router.use(function( req, res, next ){
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -92,6 +95,63 @@ router.post('/customerDelete', function(req, res, next){
 router.post('/customerUpdate', function(req, res, next){
   var condition = { _id: req.body._id }
   customer.updateOne(condition, req.body, function(err, rs){
+    if (err){
+      res.send(err);
+    }
+    else {
+      res.send(rs);
+    }
+  });
+});
+
+router.post('/petSave', function(req, res, next){
+  req.body.customer_id = new ObjectId(req.body.customer_id);
+
+  if(req.body._id == null){
+    pet.insertMany(req.body, function(err, rs){
+      if (err){
+        res.send(err);
+      }
+      else { 
+        res.send(rs);
+      }
+    });
+  }
+  else{
+    var condition = { _id: req.body._id}
+    pet.updateOne(condition, req.body, function(err, rs){
+      if (err){
+        res.send(err);
+      }
+      else { 
+        res.send(rs);
+      }
+    })
+  }
+});
+
+router.get('/petAll', function(req, res, next){
+  pet.aggregate([
+    {
+      "$lookup": {     
+        "from": "customer",     
+        "localField": "customer_id",     
+        "foreignField": "_id",     
+        "as": "customer"   
+      }
+    } 
+]).exec(function(err, rs){
+    if (err){
+      res.send(err);
+    }
+    else {
+      res.send(rs);
+    }
+  });
+});
+
+router.post('/petDelete', function(req, res, next){
+  pet.deleteOne({ _id: req.body._id }, function(err, rs){
     if (err){
       res.send(err);
     }
