@@ -1,10 +1,10 @@
 var express = require('express');
-//const mongoose = require('./connect');
 var router = express.Router();
 var mongoose = require('./connect');
 var clinic = mongoose.model('clinic', require('./schema/clinic'));
 var customer = mongoose.model('customer', require('./schema/customer'));
 var pet = mongoose.model('pet', require('./schema/pet'));
+var repair = mongoose.model('repair', require('./schema/repair'));
 
 var ObjectId = require('mongodb').ObjectID;
 
@@ -157,6 +157,32 @@ router.post('/petDelete', function(req, res, next){
     }
     else {
       res.send(rs);
+    }
+  });
+});
+
+router.post('/petOfCustomer', function(req, res, next){
+  pet.find({ customer_id: req.body._id }, function(err, rs){
+    if (err){
+      res.send(err);
+    }
+    else {
+      res.send(rs);
+    }
+  });
+});
+
+router.post('/repairSave', function(req, res, next){
+  var data = {
+    problem: req.body.repair.problem,
+    pet_id: new ObjectId(req.body.pet._id)
+  }
+  repair.insertMany(data, function (err, rs) {
+    if(err){
+      res.send(err)
+    }
+    else{
+      res.send(rs)
     }
   });
 });
