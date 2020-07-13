@@ -5,6 +5,7 @@ var clinic = mongoose.model('clinic', require('./schema/clinic'));
 var customer = mongoose.model('customer', require('./schema/customer'));
 var pet = mongoose.model('pet', require('./schema/pet'));
 var repair = mongoose.model('repair', require('./schema/repair'));
+var mediceen = mongoose.model('mediceen', require('./schema/mediceen'));
 
 var ObjectId = require('mongodb').ObjectID;
 
@@ -173,12 +174,98 @@ router.post('/petOfCustomer', function(req, res, next){
 });
 
 router.post('/repairSave', function(req, res, next){
+
   var data = {
     problem: req.body.repair.problem,
     pet_id: new ObjectId(req.body.pet._id)
   }
-  repair.insertMany(data, function (err, rs) {
+
+  if(req.body.repair._id != undefined){
+    var condition = { _id: new ObjectId(req.body.repair._id) }
+    repair.updateOne(condition, data, function(err, rs) {
+      if(err){
+        res.send(err)
+      }
+      else{
+        res.send(rs)
+      }
+    });
+  }
+  else{
+    repair.insertMany(data, function (err, rs) {
+      if(err){
+        res.send(err)
+      }
+      else{
+        res.send(rs)
+      }
+    });
+  }
+  
+});
+
+router.post('/repairOfPet', function (req, res, next){
+  repair.find({ pet_id: req.body.pet_id }, function(err, rs){
     if(err){
+      res.send(err)
+    }
+    else{
+      res.send(rs)
+    }
+  });
+});
+
+router.post('/repairRemove', function(req, res, next){
+  repair.deleteOne({ _id: req.body._id }, function(err, rs){
+    if(err){
+      res.send(err)
+    }
+    else{
+      res.send(rs)
+    }
+  });
+});
+
+router.post('/saveMediceen', function(req, res, next){
+
+  if( req.body._id !== undefined){
+    var condition = { _id: req.body._id }
+
+    mediceen.updateOne(condition, req.body, function(err, rs){
+      if(err){
+        res.send(err)
+      }
+      else{
+        res.send(rs)
+      }
+    })
+  }
+  else{
+    mediceen.insertMany(req.body, function(err, rs){
+      if(err){
+        res.send(err)
+      }
+      else{
+        res.send(rs)
+      }
+    });
+  }
+});
+
+router.get('/mediceenInfo', function(req, res, next){
+  mediceen.find({}, function(err, rs){
+    if(err){
+      res.send(err)
+    }
+    else{
+      res.send(rs)
+    }
+  });
+});
+
+router.post('/mediceenDelete', function(req, res, next){
+  mediceen.deleteOne({ _id: req.body._id }, function(err, rs){
+    if (err){
       res.send(err)
     }
     else{
