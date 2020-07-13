@@ -6,6 +6,7 @@ var customer = mongoose.model("customer", require("./schema/customer"));
 var pet = mongoose.model("pet", require("./schema/pet"));
 var repair = mongoose.model("repair", require("./schema/repair"));
 var mediceen = mongoose.model("mediceen", require("./schema/mediceen"));
+var repair_mediceen = mongoose.model("repair_mediceen", require("./schema/repair_mediceen"));
 
 var ObjectId = require("mongodb").ObjectID;
 
