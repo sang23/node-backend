@@ -252,7 +252,7 @@ router.post('/saveMediceen', function(req, res, next){
   }
 });
 
-router.get('/mediceenInfo', function(req, res, next){
+router.get('/mediceenAll', function(req, res, next){
   mediceen.find({}, function(err, rs){
     if(err){
       res.send(err)
