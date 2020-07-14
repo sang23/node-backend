@@ -171,6 +171,8 @@ router.post("/repairSave", function (req, res, next) {
   var data = {
     problem: req.body.repair.problem,
     pet_id: new ObjectId(req.body.pet._id),
+    price: req.body.repair.price,
+    remark: req.body.repair.remark,
   };
 
   if (req.body.repair._id != undefined) {
@@ -254,5 +256,62 @@ router.post("/mediceenDelete", function (req, res, next) {
     }
   });
 });
+
+router.post("/repairMediceenSave", function (req, res, next){
+  var condition = { _id: req.body._id };
+  if(req.body._id != undefined){
+    repair_mediceen.updateOne(condition, req.body, function (err, rs) {
+        if (err) {
+          res.send(err);
+        } else {
+          res.send(rs);
+        }
+      });
+  } else {
+    repair_mediceen.insertMany(req.body, function (err, rs){
+      if (err){
+        res.send(err);
+      }
+      else {
+        res.send(rs);
+      }
+    });
+  }
+});
+
+router.post("/history", function (req, res, next){
+  req.body._id = new ObjectId(req.body._id);
+  repair_mediceen.aggregate([
+    {
+      $match: {
+        repair_id: req.body._id
+      }
+    },
+    {
+      $lookup:{
+        from: "mediceen",
+        localField: "mediceen_id",
+        foreignField: "_id",
+        as: "mediceen"
+      }
+    }
+  ]).exec(function (err, rs) {
+    if (err){
+      res.send(err);
+    } else {
+      res.send(rs);
+    }
+  })
+})
+
+router.post("/removeHistory", function (req, res, next){
+  repair_mediceen.deleteOne({ _id: req.body._id }, function (err, rs){
+    if (err){
+      res.send(err);
+    } else {
+      res.send(rs);
+    }
+  })
+})
 
 module.exports = router;
