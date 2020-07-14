@@ -173,6 +173,7 @@ router.post("/repairSave", function (req, res, next) {
     pet_id: new ObjectId(req.body.pet._id),
     price: req.body.repair.price,
     remark: req.body.repair.remark,
+    created_at: new Date()
   };
 
   if (req.body.repair._id != undefined) {
@@ -283,16 +284,16 @@ router.post("/history", function (req, res, next){
   req.body._id = new ObjectId(req.body._id);
   repair_mediceen.aggregate([
     {
-      $match: {
-        repair_id: req.body._id
+      "$match": {
+        'repair_id': 'req.body._id'
       }
     },
     {
-      $lookup:{
-        from: "mediceen",
-        localField: "mediceen_id",
-        foreignField: "_id",
-        as: "mediceen"
+      "$lookup":{
+        'from': 'mediceen',
+        'localField': 'mediceen_id',
+        'foreignField': '_id',
+        'as': 'mediceen'
       }
     }
   ]).exec(function (err, rs) {
@@ -306,6 +307,51 @@ router.post("/history", function (req, res, next){
 
 router.post("/removeHistory", function (req, res, next){
   repair_mediceen.deleteOne({ _id: req.body._id }, function (err, rs){
+    if (err){
+      res.send(err);
+    } else {
+      res.send(rs);
+    }
+  })
+})
+
+router.post('/reportAll', function (req, res, next){
+
+  var fromDate = new Date(req.body.from);
+  var toDate = new Date(req.body.to);
+
+  repair.aggregate([
+    {
+      "$match":{
+        'created_at': {
+          "$gte": fromDate,
+          "$lt": toDate
+        }
+      }
+    },
+    {
+      "$lookup": {
+        'from': 'pet',
+        'localField': 'pet_id',
+        'foreignField': '_id',
+        'as': 'pet'
+      }
+    },
+    {
+      "$unwind": '$pet'
+    },
+    {
+      "$lookup": {
+        'from': 'customer',
+        'localField': 'pet.customer_id',
+        'foreignField': '_id',
+        'as': 'customer'
+      }
+    },
+    {
+      "$unwind": '$customer'
+    }
+  ]).exec(function (err, rs) {
     if (err){
       res.send(err);
     } else {
